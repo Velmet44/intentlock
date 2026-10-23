@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>IntentLock</title>
+<link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+<header>
+  <h1>IntentLock</h1>
+  <p class="tag">The rewrite bot that isn't allowed to change what you meant.</p>
+  <button id="signinBtn">Sign in (Auth0)</button>
+  <span id="userLabel"></span>
+</header>
+
+<main>
+  <nav class="tabs">
+    <button data-tab="compose" class="active">Compose</button>
+    <button data-tab="inbox">Inbox</button>
+    <button data-tab="activity">Activity</button>
+  </nav>
+
+  <section id="tab-compose" class="tab active">
+    <div class="panel">
+      <h2>Paste your message</h2>
+      <textarea id="original" rows="6" placeholder="I can't commit to Friday."></textarea>
+      <div class="goals">
+        <button class="chip" data-goal="Clear & kind">Clear & kind</button>
+        <button class="chip" data-goal="Firm but not hostile">Firm but not hostile</button>
+        <button class="chip" data-goal="Warm decline">Warm decline</button>
+        <button class="chip" data-goal="Short & neutral">Short & neutral</button>
+      </div>
+      <input id="customGoal" placeholder="or custom goal..." />
+      <button id="extractBtn">Extract intent contract</button>
+    </div>
+
+    <div id="contractPanel" class="panel hidden">
+      <h2>Intent contract</h2>
+      <p>Here's what you said. Confirm this is what you mean.</p>
+      <ul id="atomList"></ul>
+      <button id="approveContractBtn">Approve contract & rewrite</button>
+    </div>
+
+    <div id="resultPanel" class="panel hidden">
+      <h2>Result</h2>
+      <div class="three">
+        <div><h3>Original</h3><pre id="origView"></pre></div>
+        <div><h3>Rewrite</h3><pre id="rewriteView"></pre></div>
+        <div><h3>Atom ledger</h3><ul id="ledger"></ul></div>
+      </div>
+      <div class="actions">
+        <button id="approveSaveBtn">Approve & save draft</button>
+        <button id="regenBtn">Regenerate with reason</button>
+        <button id="copyOnlyBtn">Copy only</button>
+      </div>
+      <div id="approvalCard" class="card hidden">
+        <h3>Approval required</h3>
+        <p id="approvalInfo"></p>
+        <button id="approvalApprove">Approve</button>
+        <button id="approvalDecline">Decline</button>
+        <input id="declineReason" placeholder="reason..." />
+      </div>
+      <div id="regenBox" class="hidden">
+        <input id="regenReason" placeholder="why regenerate?" />
+        <button id="regenConfirm">Regenerate</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-inbox" class="tab hidden">
+    <div class="panel">
+      <h2>Inbox (authorized senders only)</h2>
+      <button id="loadInboxBtn">Load messages</button>
+      <ul id="inboxList"></ul>
+      <div id="threadView" class="hidden">
+        <h3 id="threadSubject"></h3>
+        <pre id="threadBody"></pre>
+        <button id="useThreadBtn">Use as source</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-activity" class="tab hidden">
+    <div class="panel">
+      <h2>Activity log</h2>
+      <button id="loadActivityBtn">Refresh</button>
+      <pre id="activityView"></pre>
+    </div>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
