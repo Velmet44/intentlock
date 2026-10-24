@@ -18,10 +18,20 @@ class LLMClient:
         if json_mode:
             payload["format"] = "json"
         async with httpx.AsyncClient(timeout=120) as c:
-            r = await c.post(f"{self.url}/api/generate", json=payload)
-            r.raise_for_status()
-            data = r.json()
-            return data.get("response", "")
+            try:
+                r = await c.post(f"{self.url}/api/generate", json=payload)
+                r.raise_for_status()
+                data = r.json()
+                return data.get("response", "")
+            except Exception:
+                if self.model != config.OLLAMA_FALLBACK:
+                    self.model = config.OLLAMA_FALLBACK
+                    payload["model"] = self.model
+                    r = await c.post(f"{self.url}/api/generate", json=payload)
+                    r.raise_for_status()
+                    data = r.json()
+                    return data.get("response", "")
+                raise
 
     def _mock(self, prompt: str) -> str:
         # minimal mock for tests/offline

@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "msg": "I can't commit to Friday.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.11
+  },
+  {
+    "id": 2,
+    "msg": "Please send the invoice for $1,240.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 3,
+    "msg": "I won't share the file externally.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 4,
+    "msg": "Thanks \u2014 no apology needed.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 5,
+    "msg": "If the price drops below \u20ac400, I'll buy two.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 6,
+    "msg": "I'm unhappy with the delay.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 7,
+    "msg": "Could you loop in Priya?",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 8,
+    "msg": "Version 2.1 fixed it, mostly.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 9,
+    "msg": "I decline the speaking invitation, but thank you warmly.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 10,
+    "msg": "We can't host this quarter.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 11,
+    "msg": "Please don't contact me on weekends.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  },
+  {
+    "id": 12,
+    "msg": "My budget is $80/month, hard cap.",
+    "atoms": 0,
+    "overall": "PASS",
+    "l1": true,
+    "trap_pass": true,
+    "latency_s": 0.02
+  }
+]
