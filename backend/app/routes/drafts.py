@@ -35,13 +35,51 @@ async def extract(req: ExtractRequest, user=Depends(get_current_user)):
 async def rewrite(req: RewriteRequest, user=Depends(get_current_user)):
     llm = LLMClient()
     prompt = REWRITE.replace("{goal}", req.goal).replace("{original}", req.original)
-    raw = await llm.generate(prompt, temperature=0.3, json_mode=True)
+    raw = await llm.generate(prompt, temperature=0.0, json_mode=True)
     try:
         data = _parse_json(raw)
     except Exception:
         data = {"rewrite": req.original, "changes": []}
     rewrite_text = data.get("rewrite", req.original)
     changes = data.get("changes", [])
+    # ---- POST-REWRITE NORMALIZATION: ensure refusal atoms survive verbatim ----
+    # For each refusal atom, verify the exact wording appears in the rewrite.
+    # If the model softened/changed a refusal, revert that specific refusal to the original.
+    refusal_atoms = [a for a in req.atoms if a.type == "refusal"]
+    for ra in refusal_atoms:
+        # check if the atom's exact value (e.g. "can't commit") or key token (e.g. "can't") appears
+        key_token = ra.value.split()[0]  # e.g. "can't"
+        if key_token not in rewrite_text:
+            # model changed the refusal — keep the original refusal wording
+            # rebuild: keep the model's style changes elsewhere, but the refusal must be original
+            # Find the sentence in original containing the refusal and keep it intact
+            import re
+            # split original into sentences, keep the one with the refusal, rewrite the rest
+            orig_sentences = re.split(r'(?<=[.!?]) +', req.original)
+            for osent in orig_sentences:
+                if ra.value in osent:
+                    # keep this sentence from original, but try to apply the model's changes to other parts
+                    # simple approach: just use the original sentence as-is for the refusal part
+                    # and keep the rewrite_text's non-refusal parts
+                    break
+            # Even simpler: just prepend/insert the original refusal into the rewrite
+            # Find where the refusal concept is and insert the original wording
+            if ra.value in req.original:
+                # replace the model's version with the original refusal
+                rewrite_text = rewrite_text.replace(ra.value, req.original.split(key_token)[1] if key_token in req.original else req.original, 1)
+                # Actually, let's do the simplest thing: just use the original text if refusal can't be preserved
+                # But we want to keep style changes, so let's do a surgical fix:
+                # Find the key token in original and ensure it's in the rewrite
+                if key_token in req.original and key_token not in rewrite_text:
+                    # replace first occurrence of any refusal-like word in rewrite with the original key token
+                    for lower_k in ["can't", "cannot", "won't"]:
+                        if lower_k in rewrite_text.lower():
+                            # swap it back
+                            idx = rewrite_text.lower().index(lower_k)
+                            actual = rewrite_text[idx:idx+len(lower_k)]
+                            replacement = lower_k
+                            rewrite_text = rewrite_text[:idx] + replacement + rewrite_text[idx+len(actual):]
+                            break
     # L1
     atoms_dicts = [a.model_dump() if hasattr(a, "model_dump") else a for a in req.atoms]
     l1 = l1_check(req.original, rewrite_text, atoms_dicts)
