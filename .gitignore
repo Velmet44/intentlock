@@ -23,3 +23,7 @@ Thumbs.db
 
 # Node (if any)
 node_modules/
+
+pull.err
+pull.log
+*.err
