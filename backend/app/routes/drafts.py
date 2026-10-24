@@ -142,8 +142,7 @@ async def save_draft(req: SaveDraftRequest, user=Depends(get_current_user)):
             return {"status": "blocked", "reason": "FGA: not allowed to draft to this contact"}
 
     # Token Vault exchange
-    # need user access token; for dev mode we may not have it. Use empty -> mock returns mock token in MOCK_CONNECTORS
-    user_token = ""  # in real flow, pass from frontend or session
+    user_token = req.user_access_token or ""
     try:
         gmail_token = await gmailc.exchange_token_vault(user_token)
     except Exception as e:

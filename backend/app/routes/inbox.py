@@ -1,14 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from backend.app.auth import get_current_user
 from backend.app.connectors import gmail as gmailc
 from backend.app import fga, db
 
 router = APIRouter(prefix="/api/inbox", tags=["inbox"])
 
+def _raw_token(request: Request) -> str:
+    auth = request.headers.get("authorization", "")
+    if auth.lower().startswith("bearer "):
+        return auth.split(" ", 1)[1]
+    return ""
+
 @router.get("/messages")
-async def messages(user=Depends(get_current_user)):
-    # For dev, use mock token; real flow would exchange read scope
-    token = ""
+async def messages(request: Request, user=Depends(get_current_user)):
+    token = _raw_token(request)
     msgs = await gmailc.list_inbox_messages(token)
     # annotate FGA allowed
     out = []
@@ -25,8 +30,8 @@ async def messages(user=Depends(get_current_user)):
     return out
 
 @router.get("/messages/{msg_id}")
-async def message(msg_id: str, user=Depends(get_current_user)):
-    token = ""
+async def message(msg_id: str, request: Request, user=Depends(get_current_user)):
+    token = _raw_token(request)
     m = await gmailc.get_message(token, msg_id)
     sender = m.get("from", "")
     import re

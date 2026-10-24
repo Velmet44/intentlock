@@ -1,4 +1,5 @@
 import sqlite3, json, datetime, os
+from datetime import timezone
 from backend.app.config import config
 
 def get_conn():
@@ -52,7 +53,7 @@ def init_db():
     conn.close()
 
 def now():
-    return datetime.datetime.utcnow().isoformat() + "Z"
+    return datetime.datetime.now(timezone.utc).isoformat()
 
 def log_event(draft_id, kind, payload):
     conn = get_conn()

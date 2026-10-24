@@ -27,20 +27,54 @@ async function api(path, opts = {}) {
 async function initAuth() {
   const cfg = await api("/api/config");
   if (!cfg.auth0_domain || !cfg.auth0_client_id) return;
-  // check callback
   const params = new URLSearchParams(location.search);
-  if (params.get("code")) {
-    // exchange not implemented server-side; store code for dev note
-    console.log("Auth code received", params.get("code"));
+  const code = params.get("code");
+  if (code) {
+    const verifier = sessionStorage.getItem("pkce_verifier");
+    if (verifier) {
+      try {
+        const r = await fetch(`https://${cfg.auth0_domain}/oauth/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            grant_type: "authorization_code",
+            client_id: cfg.auth0_client_id,
+            code,
+            code_verifier: verifier,
+            redirect_uri: location.origin,
+          }),
+        });
+        const data = await r.json();
+        if (data.access_token) {
+          state.token = data.access_token;
+          document.getElementById("userLabel").textContent = "signed in";
+          // clean url
+          history.replaceState({}, "", location.pathname);
+        }
+      } catch (e) { console.error(e); }
+    }
   }
 }
 initAuth();
 
+function b64url(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+async function pkceChallenge() {
+  const verifier = [...crypto.getRandomValues(new Uint8Array(32))].map(b => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"[b % 66]).join("");
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  const challenge = b64url(digest);
+  sessionStorage.setItem("pkce_verifier", verifier);
+  return challenge;
+}
+
 document.getElementById("signinBtn").addEventListener("click", async () => {
   const cfg = await api("/api/config");
   if (!cfg.auth0_domain) { alert("Auth0 not configured (dev mode)."); return; }
+  const challenge = await pkceChallenge();
   const redirect = encodeURIComponent(location.origin);
-  location.href = `https://${cfg.auth0_domain}/authorize?response_type=code&client_id=${cfg.auth0_client_id}&redirect_uri=${redirect}&scope=openid%20profile%20email&audience=${encodeURIComponent(cfg.auth0_audience)}`;
+  location.href = `https://${cfg.auth0_domain}/authorize?response_type=code&client_id=${cfg.auth0_client_id}&redirect_uri=${redirect}&scope=openid%20profile%20email&audience=${encodeURIComponent(cfg.auth0_audience)}&code_challenge=${challenge}&code_challenge_method=S256`;
 });
 
 // Extract
@@ -99,7 +133,7 @@ document.getElementById("approveSaveBtn").addEventListener("click", () => {
 });
 
 document.getElementById("approvalApprove").addEventListener("click", async () => {
-  const data = await api("/api/save", { method: "POST", body: JSON.stringify({ draft_id: state.draftId, approved: true, recipient: "", subject: "IntentLock draft", }) });
+  const data = await api("/api/save", { method: "POST", body: JSON.stringify({ draft_id: state.draftId, approved: true, recipient: "", subject: "IntentLock draft", user_access_token: state.token, }) });
   alert("Save result: " + JSON.stringify(data));
   document.getElementById("approvalCard").classList.add("hidden");
 });

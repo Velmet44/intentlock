@@ -59,6 +59,7 @@ class SaveDraftRequest(BaseModel):
     draft_id: int
     approved: bool
     decline_reason: Optional[str] = None
+    user_access_token: Optional[str] = None
     # Mode B thread context
     thread_id: Optional[int] = None
     recipient: Optional[str] = None
